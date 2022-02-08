@@ -32,12 +32,18 @@ public enum EFAutoScrollDirection {
 }
 
 public class EFAutoScrollLabel: UIView {
-
+    
     private static let kLabelCount: Int = 2
     private static let kDefaultFadeLength: CGFloat = 7.0
     private static let kDefaultLabelBufferSpace: CGFloat = 20  // Pixel buffer space between scrolling label
     private static let kDefaultPixelsPerSecond: Double = 30.0
     private static let kDefaultPauseTime: Double = 1.5
+    
+    public var initialScrollInset = CGPoint(x: -12, y: .zero) {
+        didSet {
+            scrollLabelIfNeeded()
+        }
+    }
 
     public var scrollDirection = EFAutoScrollDirection.right {
         didSet {
@@ -303,7 +309,7 @@ public class EFAutoScrollLabel: UIView {
         self.scrollView.layer.removeAllAnimations()
 
         let doScrollLeft = self.scrollDirection == EFAutoScrollDirection.left
-        self.scrollView.contentOffset = doScrollLeft ? .zero : CGPoint(x: labelWidth + self.labelSpacing, y: 0)
+        self.scrollView.contentOffset = doScrollLeft ? initialScrollInset : CGPoint(x: labelWidth + self.labelSpacing, y: 0)
 
         self.perform(#selector(EFAutoScrollLabel.enableShadow), with: nil, afterDelay: self.pauseInterval)
 
@@ -317,8 +323,9 @@ public class EFAutoScrollLabel: UIView {
             animations: { [weak self] () -> Void in
                 guard let self = self else { return }
                 // Adjust offset
-                let offsetTodo: CGPoint = CGPoint(x: labelWidth + self.labelSpacing, y: 0)
-                self.scrollView.contentOffset = doScrollLeft ? offsetTodo : CGPoint.zero
+                let offsetTodoX = labelWidth + self.labelSpacing + self.initialScrollInset.x
+                let offsetTodo: CGPoint = CGPoint(x: offsetTodoX, y: 0)
+                self.scrollView.contentOffset = doScrollLeft ? offsetTodo : self.initialScrollInset
         }) { [weak self] finished in
             guard let self = self else { return }
             self.scrolling = false
@@ -351,7 +358,7 @@ public class EFAutoScrollLabel: UIView {
             lab.isHidden = false
         }
 
-        scrollView.contentOffset = CGPoint.zero
+        scrollView.contentOffset = initialScrollInset
         scrollView.layer.removeAllAnimations()
 
         // If the label is bigger than the space allocated, then it should scroll
