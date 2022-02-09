@@ -300,6 +300,7 @@ public class EFAutoScrollLabel: UIView {
     func scrollLabelIfNeededAction() {
         let labelWidth = self.mainLabel.bounds.width
         if labelWidth <= self.bounds.width {
+            scrollView.contentOffset = initialScrollInset
             return
         }
 
